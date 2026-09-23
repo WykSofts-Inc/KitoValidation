@@ -60,3 +60,30 @@ Text(viewModel.passwordStrength.label)
 ## License
 
 MIT
+
+## More rules
+
+`exactLength`, `url`, `numeric`, `alphanumeric`, `containsUppercase` / `containsLowercase` /
+`containsDigit` / `containsSymbol`, `noWhitespace`, `regex`, `number(in:)`, `luhn` (card numbers),
+`oneOf` / `notOneOf` (allow and block lists), and `strongPassword(minLength:)`.
+
+```swift
+kitoValidate(text, rules: rules)     // the first failure, or nil
+kitoValidateAll(text, rules: rules)  // every failure
+kitoEvaluate(text, rules: rules)     // every rule, passed or not — for checklists
+
+KitoPasswordStrength.suggestions(for: password)  // ["Add a number", "Add a symbol like ! or #"]
+```
+
+## Whole forms
+
+```swift
+var form = KitoFormValidator()
+form.add("Email", value: { email }, rules: [.required(), .email()])
+form.add("Password", value: { password }, rules: KitoValidator.strongPassword())
+
+form.isValid             // gate the submit button
+form.validCount          // "1 of 2 complete"
+form.errors              // ["Password": "At least 8 characters"]
+form.firstInvalidField   // scroll to it
+```
