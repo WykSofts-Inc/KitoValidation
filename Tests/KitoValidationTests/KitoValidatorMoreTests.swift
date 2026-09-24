@@ -11,35 +11,35 @@ import XCTest
 
 final class KitoValidatorMoreTests: XCTestCase {
     func testURLs() {
-        XCTAssertNil(KitoValidator.url().validate("https://wyksoftsinc.com"))
-        XCTAssertNil(KitoValidator.url().validate("http://a.io/path?q=1"))
-        XCTAssertNotNil(KitoValidator.url().validate("wyksoftsinc.com"), "needs a scheme")
-        XCTAssertNotNil(KitoValidator.url().validate("ftp://files.example.com"))
-        XCTAssertNotNil(KitoValidator.url().validate("https://localhost"), "needs a real host")
+        XCTAssertNil(KitoValidationRule.url().validate("https://wyksoftsinc.com"))
+        XCTAssertNil(KitoValidationRule.url().validate("http://a.io/path?q=1"))
+        XCTAssertNotNil(KitoValidationRule.url().validate("wyksoftsinc.com"), "needs a scheme")
+        XCTAssertNotNil(KitoValidationRule.url().validate("ftp://files.example.com"))
+        XCTAssertNotNil(KitoValidationRule.url().validate("https://localhost"), "needs a real host")
     }
 
     func testCharacterClasses() {
-        XCTAssertNil(KitoValidator.numeric().validate("0712345678"))
-        XCTAssertNotNil(KitoValidator.numeric().validate("07123 45678"))
-        XCTAssertNotNil(KitoValidator.numeric().validate(""))
-        XCTAssertNil(KitoValidator.alphanumeric().validate("Kito2026"))
-        XCTAssertNotNil(KitoValidator.alphanumeric().validate("kito_2026"))
-        XCTAssertNil(KitoValidator.containsUppercase().validate("abC"))
-        XCTAssertNil(KitoValidator.containsLowercase().validate("ABc"))
-        XCTAssertNil(KitoValidator.containsDigit().validate("ab1"))
-        XCTAssertNil(KitoValidator.containsSymbol().validate("ab!"))
-        XCTAssertNotNil(KitoValidator.containsSymbol().validate("ab 1"), "a space isn't a symbol")
-        XCTAssertNotNil(KitoValidator.noWhitespace().validate("a b"))
+        XCTAssertNil(KitoValidationRule.numeric().validate("0712345678"))
+        XCTAssertNotNil(KitoValidationRule.numeric().validate("07123 45678"))
+        XCTAssertNotNil(KitoValidationRule.numeric().validate(""))
+        XCTAssertNil(KitoValidationRule.alphanumeric().validate("Kito2026"))
+        XCTAssertNotNil(KitoValidationRule.alphanumeric().validate("kito_2026"))
+        XCTAssertNil(KitoValidationRule.containsUppercase().validate("abC"))
+        XCTAssertNil(KitoValidationRule.containsLowercase().validate("ABc"))
+        XCTAssertNil(KitoValidationRule.containsDigit().validate("ab1"))
+        XCTAssertNil(KitoValidationRule.containsSymbol().validate("ab!"))
+        XCTAssertNotNil(KitoValidationRule.containsSymbol().validate("ab 1"), "a space isn't a symbol")
+        XCTAssertNotNil(KitoValidationRule.noWhitespace().validate("a b"))
     }
 
     func testLengthsAndRanges() {
-        XCTAssertNil(KitoValidator.exactLength(6).validate("123456"))
-        XCTAssertNotNil(KitoValidator.exactLength(6).validate("12345"))
-        XCTAssertNil(KitoValidator.number(in: 1...100).validate("42"))
-        XCTAssertNil(KitoValidator.number(in: 0...5_000).validate("1,200.50"))
-        XCTAssertNotNil(KitoValidator.number(in: 1...100).validate("101"))
-        XCTAssertNotNil(KitoValidator.number(in: 1...100).validate("abc"))
-        XCTAssertEqual(KitoValidator.number(in: 1...100).errorMessage, "Enter a number from 1 to 100")
+        XCTAssertNil(KitoValidationRule.exactLength(6).validate("123456"))
+        XCTAssertNotNil(KitoValidationRule.exactLength(6).validate("12345"))
+        XCTAssertNil(KitoValidationRule.number(in: 1...100).validate("42"))
+        XCTAssertNil(KitoValidationRule.number(in: 0...5_000).validate("1,200.50"))
+        XCTAssertNotNil(KitoValidationRule.number(in: 1...100).validate("101"))
+        XCTAssertNotNil(KitoValidationRule.number(in: 1...100).validate("abc"))
+        XCTAssertEqual(KitoValidationRule.number(in: 1...100).errorMessage, "Enter a number from 1 to 100")
     }
 
     func testLuhn() {
@@ -51,15 +51,15 @@ final class KitoValidatorMoreTests: XCTestCase {
     }
 
     func testAllowAndBlockLists() {
-        XCTAssertNotNil(KitoValidator.notOneOf(["admin", "root"]).validate("Admin"))
-        XCTAssertNil(KitoValidator.notOneOf(["admin", "root"]).validate("wycliff"))
-        XCTAssertNil(KitoValidator.oneOf(["SAVE20"]).validate("save20"))
-        XCTAssertNotNil(KitoValidator.oneOf(["SAVE20"]).validate("SAVE30"))
+        XCTAssertNotNil(KitoValidationRule.notOneOf(["admin", "root"]).validate("Admin"))
+        XCTAssertNil(KitoValidationRule.notOneOf(["admin", "root"]).validate("wycliff"))
+        XCTAssertNil(KitoValidationRule.oneOf(["SAVE20"]).validate("save20"))
+        XCTAssertNotNil(KitoValidationRule.oneOf(["SAVE20"]).validate("SAVE30"))
     }
 
     func testStrongPasswordRules() {
-        XCTAssertTrue(kitoValidateAll("Kito#2026", rules: KitoValidator.strongPassword()).isEmpty)
-        XCTAssertEqual(kitoValidateAll("kito", rules: KitoValidator.strongPassword()).count, 4)
+        XCTAssertTrue(kitoValidateAll("Kito#2026", rules: KitoValidationRule.strongPassword()).isEmpty)
+        XCTAssertEqual(kitoValidateAll("kito", rules: KitoValidationRule.strongPassword()).count, 4)
     }
 
     func testEvaluateReportsEveryRule() {
@@ -69,9 +69,9 @@ final class KitoValidatorMoreTests: XCTestCase {
     }
 
     func testSuggestionsShrinkAsThePasswordImproves() {
-        XCTAssertEqual(KitoPasswordStrength.suggestions(for: "abc").count, 4)
-        XCTAssertTrue(KitoPasswordStrength.suggestions(for: "Kito#2026-strong").isEmpty)
-        XCTAssertEqual(KitoPasswordStrength.veryStrong.fraction, 1)
+        XCTAssertEqual(KitoPasswordScore.suggestions(for: "abc").count, 4)
+        XCTAssertTrue(KitoPasswordScore.suggestions(for: "Kito#2026-strong").isEmpty)
+        XCTAssertEqual(KitoPasswordScore.veryStrong.fraction, 1)
     }
 
     func testTheFormValidatorReadsLiveValues() {

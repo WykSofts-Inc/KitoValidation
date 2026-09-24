@@ -11,28 +11,28 @@ import XCTest
 
 final class KitoValidationTests: XCTestCase {
     func testRequiredRejectsBlank() {
-        XCTAssertNotNil(KitoValidator.required().validate("   "))
-        XCTAssertNil(KitoValidator.required().validate("hi"))
+        XCTAssertNotNil(KitoValidationRule.required().validate("   "))
+        XCTAssertNil(KitoValidationRule.required().validate("hi"))
     }
 
     func testEmailValidator() {
-        XCTAssertNil(KitoValidator.email().validate("a@b.com"))
-        XCTAssertNotNil(KitoValidator.email().validate("not-an-email"))
+        XCTAssertNil(KitoValidationRule.email().validate("a@b.com"))
+        XCTAssertNotNil(KitoValidationRule.email().validate("not-an-email"))
     }
 
     func testFirstFailureWins() {
-        let rules: [KitoValidator] = [.required(), .minLength(5)]
-        XCTAssertEqual(kitoValidate("", rules: rules), KitoValidator.required().errorMessage)
+        let rules: [KitoValidationRule] = [.required(), .minLength(5)]
+        XCTAssertEqual(kitoValidate("", rules: rules), KitoValidationRule.required().errorMessage)
     }
 
     func testMatchesValidator() {
         let password = "hunter22"
-        let rule = KitoValidator.matches(password)
+        let rule = KitoValidationRule.matches(password)
         XCTAssertNil(rule.validate("hunter22"))
         XCTAssertNotNil(rule.validate("hunter23"))
     }
 
     func testPasswordStrengthOrdering() {
-        XCTAssertLessThan(KitoPasswordStrength.evaluate("abc"), KitoPasswordStrength.evaluate("Abc12345!"))
+        XCTAssertLessThan(KitoPasswordScore.evaluate("abc"), KitoPasswordScore.evaluate("Abc12345!"))
     }
 }
