@@ -1,5 +1,7 @@
 # KitoValidation
 
+**[Documentation](https://wyksofts-inc.github.io/KitoValidation/documentation/kitovalidation/)**
+
 Composable field validators and a password-strength scorer. The canonical
 place `KitoFields`-based forms (and any custom form) put validation logic —
 so it lives in one testable, reusable spot instead of scattered `if` chains.
