@@ -1,5 +1,5 @@
 //
-//  KitoValidator+More.swift
+//  KitoValidationRule+More.swift
 //  KitoValidation
 //
 //  Created by Wycliff on 9/23/26.
@@ -8,78 +8,78 @@
 
 import Foundation
 
-public extension KitoValidator {
-    static func exactLength(_ length: Int, message: String? = nil) -> KitoValidator {
-        KitoValidator(errorMessage: message ?? "Must be exactly \(length) characters") { $0.count == length }
+public extension KitoValidationRule {
+    static func exactLength(_ length: Int, message: String? = nil) -> KitoValidationRule {
+        KitoValidationRule(errorMessage: message ?? "Must be exactly \(length) characters") { $0.count == length }
     }
 
     /// An http or https address with a host.
-    static func url(message: String = "Enter a valid web address") -> KitoValidator {
-        KitoValidator(errorMessage: message) { value in
+    static func url(message: String = "Enter a valid web address") -> KitoValidationRule {
+        KitoValidationRule(errorMessage: message) { value in
             guard let url = URL(string: value.trimmingCharacters(in: .whitespaces)), let scheme = url.scheme?.lowercased() else { return false }
             return (scheme == "http" || scheme == "https") && (url.host?.contains(".") ?? false)
         }
     }
 
-    static func numeric(message: String = "Digits only") -> KitoValidator {
-        KitoValidator(errorMessage: message) { !$0.isEmpty && $0.allSatisfy(\.isNumber) }
+    static func numeric(message: String = "Digits only") -> KitoValidationRule {
+        KitoValidationRule(errorMessage: message) { !$0.isEmpty && $0.allSatisfy(\.isNumber) }
     }
 
-    static func alphanumeric(message: String = "Letters and numbers only") -> KitoValidator {
-        KitoValidator(errorMessage: message) { !$0.isEmpty && $0.allSatisfy { $0.isLetter || $0.isNumber } }
+    static func alphanumeric(message: String = "Letters and numbers only") -> KitoValidationRule {
+        KitoValidationRule(errorMessage: message) { !$0.isEmpty && $0.allSatisfy { $0.isLetter || $0.isNumber } }
     }
 
-    static func containsUppercase(message: String = "At least one uppercase letter") -> KitoValidator {
-        KitoValidator(errorMessage: message) { $0.contains(where: \.isUppercase) }
+    static func containsUppercase(message: String = "At least one uppercase letter") -> KitoValidationRule {
+        KitoValidationRule(errorMessage: message) { $0.contains(where: \.isUppercase) }
     }
 
-    static func containsLowercase(message: String = "At least one lowercase letter") -> KitoValidator {
-        KitoValidator(errorMessage: message) { $0.contains(where: \.isLowercase) }
+    static func containsLowercase(message: String = "At least one lowercase letter") -> KitoValidationRule {
+        KitoValidationRule(errorMessage: message) { $0.contains(where: \.isLowercase) }
     }
 
-    static func containsDigit(message: String = "At least one number") -> KitoValidator {
-        KitoValidator(errorMessage: message) { $0.contains(where: \.isNumber) }
+    static func containsDigit(message: String = "At least one number") -> KitoValidationRule {
+        KitoValidationRule(errorMessage: message) { $0.contains(where: \.isNumber) }
     }
 
-    static func containsSymbol(message: String = "At least one symbol") -> KitoValidator {
-        KitoValidator(errorMessage: message) { $0.contains { !$0.isLetter && !$0.isNumber && !$0.isWhitespace } }
+    static func containsSymbol(message: String = "At least one symbol") -> KitoValidationRule {
+        KitoValidationRule(errorMessage: message) { $0.contains { !$0.isLetter && !$0.isNumber && !$0.isWhitespace } }
     }
 
-    static func noWhitespace(message: String = "No spaces") -> KitoValidator {
-        KitoValidator(errorMessage: message) { !$0.contains(where: \.isWhitespace) }
+    static func noWhitespace(message: String = "No spaces") -> KitoValidationRule {
+        KitoValidationRule(errorMessage: message) { !$0.contains(where: \.isWhitespace) }
     }
 
-    static func regex(_ pattern: String, message: String) -> KitoValidator {
-        KitoValidator(errorMessage: message) { $0.range(of: pattern, options: .regularExpression) != nil }
+    static func regex(_ pattern: String, message: String) -> KitoValidationRule {
+        KitoValidationRule(errorMessage: message) { $0.range(of: pattern, options: .regularExpression) != nil }
     }
 
     /// A number between `range`'s bounds, inclusive. Accepts "1,200.50" style grouping.
-    static func number(in range: ClosedRange<Double>, message: String? = nil) -> KitoValidator {
-        KitoValidator(errorMessage: message ?? "Enter a number from \(Self.format(range.lowerBound)) to \(Self.format(range.upperBound))") { value in
+    static func number(in range: ClosedRange<Double>, message: String? = nil) -> KitoValidationRule {
+        KitoValidationRule(errorMessage: message ?? "Enter a number from \(Self.format(range.lowerBound)) to \(Self.format(range.upperBound))") { value in
             guard let number = Double(value.replacingOccurrences(of: ",", with: "").trimmingCharacters(in: .whitespaces)) else { return false }
             return range.contains(number)
         }
     }
 
     /// The Luhn checksum every payment card number passes. Spaces and dashes are ignored.
-    static func luhn(message: String = "Check the card number") -> KitoValidator {
-        KitoValidator(errorMessage: message) { kitoPassesLuhn($0) }
+    static func luhn(message: String = "Check the card number") -> KitoValidationRule {
+        KitoValidationRule(errorMessage: message) { kitoPassesLuhn($0) }
     }
 
     /// Rejects values in `blocked`, ignoring case: reserved usernames, taken handles.
-    static func notOneOf(_ blocked: [String], message: String = "That one isn't available") -> KitoValidator {
+    static func notOneOf(_ blocked: [String], message: String = "That one isn't available") -> KitoValidationRule {
         let lowered = Set(blocked.map { $0.lowercased() })
-        return KitoValidator(errorMessage: message) { !lowered.contains($0.lowercased()) }
+        return KitoValidationRule(errorMessage: message) { !lowered.contains($0.lowercased()) }
     }
 
     /// Accepts only values in `allowed`, ignoring case: promo codes, country codes.
-    static func oneOf(_ allowed: [String], message: String = "Not a recognised value") -> KitoValidator {
+    static func oneOf(_ allowed: [String], message: String = "Not a recognised value") -> KitoValidationRule {
         let lowered = Set(allowed.map { $0.lowercased() })
-        return KitoValidator(errorMessage: message) { lowered.contains($0.lowercased()) }
+        return KitoValidationRule(errorMessage: message) { lowered.contains($0.lowercased()) }
     }
 
     /// A strong password: length plus each character class.
-    static func strongPassword(minLength: Int = 8) -> [KitoValidator] {
+    static func strongPassword(minLength: Int = 8) -> [KitoValidationRule] {
         [.minLength(minLength, message: "At least \(minLength) characters"), .containsUppercase(), .containsLowercase(), .containsDigit(), .containsSymbol()]
     }
 
@@ -114,20 +114,20 @@ public struct KitoRuleResult: Equatable, Sendable, Identifiable {
 }
 
 /// Every rule's outcome, in order.
-public func kitoEvaluate(_ value: String, rules: [KitoValidator]) -> [KitoRuleResult] {
+public func kitoEvaluate(_ value: String, rules: [KitoValidationRule]) -> [KitoRuleResult] {
     rules.enumerated().map { index, rule in
         KitoRuleResult(id: index, message: rule.errorMessage, passed: rule.validate(value) == nil)
     }
 }
 
 /// Every failure message, in order: for an error summary rather than a single line.
-public func kitoValidateAll(_ value: String, rules: [KitoValidator]) -> [String] {
+public func kitoValidateAll(_ value: String, rules: [KitoValidationRule]) -> [String] {
     rules.compactMap { $0.validate(value) }
 }
 
 // MARK: - Password feedback
 
-public extension KitoPasswordStrength {
+public extension KitoPasswordScore {
     /// What would make `password` stronger, most useful first. Empty once it's very strong.
     static func suggestions(for password: String) -> [String] {
         var tips: [String] = []
@@ -150,14 +150,14 @@ public struct KitoFormValidator {
     public struct Field {
         public let name: String
         public let value: () -> String
-        public let rules: [KitoValidator]
+        public let rules: [KitoValidationRule]
     }
 
     public private(set) var fields: [Field] = []
 
     public init() {}
 
-    public mutating func add(_ name: String, value: @escaping () -> String, rules: [KitoValidator]) {
+    public mutating func add(_ name: String, value: @escaping () -> String, rules: [KitoValidationRule]) {
         fields.append(Field(name: name, value: value, rules: rules))
     }
 

@@ -7,19 +7,28 @@ so it lives in one testable, reusable spot instead of scattered `if` chains.
 ## Install
 
 ```swift
-.package(url: "https://github.com/WykSofts-Inc/KitoValidation.git", from: "1.0.0"),
+.package(url: "https://github.com/WykSofts-Inc/KitoValidation.git", from: "1.1.0"),
 ```
+
+## Migrating from 1.0
+
+1.1.0 renames two types so KitoValidation can be imported in the same file as KitoFields (which
+has its own `KitoValidator` and `KitoPasswordStrength`) without "ambiguous" errors:
+
+- `KitoValidator` is now `KitoValidationRule`. Every rule (`.required()`, `.email()`, `.minLength(_:)`,
+  …) and `kitoValidate(_:rules:)` work as before; only the type name changed.
+- `KitoPasswordStrength` is now `KitoPasswordScore`, with the same cases, `label` and `evaluate(_:)`.
 
 ## Samples
 
 **Single field:**
 ```swift
-let error = KitoValidator.email().validate(emailText)
+let error = KitoValidationRule.email().validate(emailText)
 ```
 
 **Compose rules, first failure wins:**
 ```swift
-let passwordRules: [KitoValidator] = [
+let passwordRules: [KitoValidationRule] = [
     .required(),
     .minLength(8),
     .custom(message: "Needs a number") { $0.contains { $0.isNumber } },
@@ -29,7 +38,7 @@ let error = kitoValidate(passwordText, rules: passwordRules)
 
 **Confirm-password matching:**
 ```swift
-let confirmRules: [KitoValidator] = [.required(), .matches(passwordText)]
+let confirmRules: [KitoValidationRule] = [.required(), .matches(passwordText)]
 ```
 
 **Sign-up ViewModel wiring it all together:**
@@ -41,7 +50,7 @@ let confirmRules: [KitoValidator] = [.required(), .matches(passwordText)]
     var emailError: String?
     var passwordError: String?
 
-    var passwordStrength: KitoPasswordStrength { .evaluate(password) }
+    var passwordStrength: KitoPasswordScore { .evaluate(password) }
 
     func validate() -> Bool {
         emailError = kitoValidate(email, rules: [.required(), .email()])
@@ -72,7 +81,7 @@ kitoValidate(text, rules: rules)     // the first failure, or nil
 kitoValidateAll(text, rules: rules)  // every failure
 kitoEvaluate(text, rules: rules)     // every rule, passed or not — for checklists
 
-KitoPasswordStrength.suggestions(for: password)  // ["Add a number", "Add a symbol like ! or #"]
+KitoPasswordScore.suggestions(for: password)  // ["Add a number", "Add a symbol like ! or #"]
 ```
 
 ## Whole forms
@@ -80,7 +89,7 @@ KitoPasswordStrength.suggestions(for: password)  // ["Add a number", "Add a symb
 ```swift
 var form = KitoFormValidator()
 form.add("Email", value: { email }, rules: [.required(), .email()])
-form.add("Password", value: { password }, rules: KitoValidator.strongPassword())
+form.add("Password", value: { password }, rules: KitoValidationRule.strongPassword())
 
 form.isValid             // gate the submit button
 form.validCount          // "1 of 2 complete"
